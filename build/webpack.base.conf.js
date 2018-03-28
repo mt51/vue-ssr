@@ -12,17 +12,6 @@ function resolve (dir) {
   return path.join(__dirname, '..', dir)
 }
 
-const createLintingRule = () => ({
-  test: /\.(js|vue)$/,
-  loader: 'eslint-loader',
-  enforce: 'pre',
-  include: [resolve('src'), resolve('test')],
-  options: {
-    formatter: require('eslint-friendly-formatter'),
-    emitWarning: !config.dev.showEslintErrorsInOverlay
-  }
-})
-
 const styleRule = utils.styleLoaders({
   sourceMap: isProd ? config.build.productionSourceMap: config.dev.cssSourceMap,
   extract: isProd
@@ -48,16 +37,30 @@ module.exports = {
   },
   module: {
     rules: [
-      ...(config.dev.useEslint ? [createLintingRule()] : []),
-      ...styleRule,
       {
-        test: /\.pcss$/,
-        use: [
-          'style-loader',
-          { loader: 'css-loader', options: { importLoaders: 1 } },
-          'postcss-loader'
-        ],
-        include: [resolve('src'), resolve('test')]
+        test: /\.(vue|js)$/,
+        enforce: 'pre',
+        loader: 'eslint-loader',
+        exclude: /node_modules/
+      },
+      {
+        test: /\.(css|pcss)$/,
+        use: isProd
+          ? ExtractTextPlugin.extract({
+            use: [
+              {
+                loader: 'css-loader',
+                options: { minimize: true }
+              },
+              'postcss-loader'
+            ],
+            fallback: 'vue-style-loader'
+          })
+          : [
+            'vue-style-loader',
+            { loader: 'css-loader', options: { importLoaders: 1 } },
+            'postcss-loader'
+          ]
       },
       {
         test: /\.vue$/,
@@ -67,7 +70,7 @@ module.exports = {
       {
         test: /\.js$/,
         loader: 'babel-loader',
-        include: [resolve('src'), resolve('test'), resolve('node_modules/webpack-dev-server/client')]
+        include: [resolve('views'), resolve('test'), resolve('node_modules/webpack-dev-server/client')]
       },
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
@@ -112,9 +115,6 @@ module.exports = {
       ]
     : [
         new VueLoaderPlugin(),
-        new FriendlyErrorsPlugin(),
-        new ExtractTextPlugin({
-          filename: 'common.[chunkhash].css'
-        })
+        new FriendlyErrorsPlugin()
       ]
 }
