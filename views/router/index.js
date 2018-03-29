@@ -3,7 +3,7 @@ import Router from 'vue-router'
 
 Vue.use(Router)
 
-export function createRouter() {
+export function createRouter () {
   return new Router({
     modes: 'history',
     routes: [{

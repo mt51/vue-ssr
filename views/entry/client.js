@@ -14,7 +14,7 @@ Vue.mixin({
         store: this.$store,
         route: to
       })
-      .then(nexr).catch(next)
+        .then(next).catch(next)
     } else {
       next()
     }
@@ -39,7 +39,7 @@ router.onReady(() => {
     })).then(() => {
       next()
     })
-    .catch(next)
+      .catch(next)
   })
   app.$mount('#app')
 })

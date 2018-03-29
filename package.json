@@ -86,6 +86,7 @@
     "semver": "^5.3.0",
     "shelljs": "^0.7.6",
     "style-loader": "^0.20.3",
+    "stylus-loader": "^3.0.2",
     "uglifyjs-webpack-plugin": "^1.1.1",
     "url-loader": "^0.5.8",
     "vue-jest": "^1.0.2",
