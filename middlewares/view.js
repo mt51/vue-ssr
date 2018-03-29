@@ -12,9 +12,27 @@ function createRenderer (bundle, options) {
     }))
 }
 
-module.exports = function (app) {
+module.exports = function (app, req, res) {
   let renderer
   let readyPromise
+  const templatePath = resolve('../views/index.html')
+  if (isProd) {
+    const template = fs.readFileSync(templatePath, 'utf-8')
+    const bundle = require('../dist/vue-ssr-server-bundle.json')
+    const clientManifest = require('../dist/vue-ssr-client-manifest.json')
+    renderer = createRenderer(bundle, {
+      template,
+      clientManifest
+    })
+  } else {
+    readyPromise = require('../build/setup-dev-server')(
+      app,
+      templatePath,
+      (bundle, options) => {
+        renderer = createRenderer(bundle, options)
+      }
+    )
+  }
 
   function render (req, res) {
     const s = Date.now()
@@ -35,7 +53,7 @@ module.exports = function (app) {
     }
 
     const context = {
-      title: 'Vue SSR', 
+      title: 'Vue HN 2.0', // default title
       url: req.url
     }
     renderer.renderToString(context, (err, html) => {
@@ -47,23 +65,6 @@ module.exports = function (app) {
         console.log(`whole request: ${Date.now() - s}ms`)
       }
     })
-  }
-
-  const templatePath = resolve('../views/index.html')
-  if (isProd) {
-    const template = fs.readFileSync(templatePath, 'utf-8')
-    const bundle = require('../dist/vue-ssr-server-bundle.json')
-    renderer = createRenderer(bundle, {
-      template
-    })
-  } else {
-    readyPromise = require('../build/setup-dev-server')(
-      app,
-      templatePath,
-      (bundle, options) => {
-        renderer = createRenderer(bundle, options)
-      }
-    )
   }
   return isProd ? render : (req, res) => {
     readyPromise.then(() => render(req, res))
